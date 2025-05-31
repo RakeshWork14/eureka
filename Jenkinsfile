@@ -1,4 +1,13 @@
-@Library ("com.i27academy.slb@master") _
-jfrogPipeline(
-    appName: 'eureka'
-)
+pipeline{
+    agent{
+        label 'slave-1'
+    }
+  stages{
+    stage('buildstage'){
+        steps{
+            echo "Testing build stage"
+        }
+    }
+  }
+
+}
