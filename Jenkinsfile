@@ -28,7 +28,7 @@ pipeline{
             sh """
             mvn sonar:sonar \
                 -Dsonar.projectKey=i27-eureka \
-                -Dsonar.host.url="${env.SONAR_URL}"  
+                -Dsonar.host.url="${env.SONAR_URL}" \
                 -Dsonar.login=${SONAR_TOKEN}
             """
           
