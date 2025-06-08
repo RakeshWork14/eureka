@@ -26,7 +26,8 @@ pipeline{
     stage('sonarstage'){
       steps{
         echo "starting sonar scan"
-        withSonarQubeEnv('sonar'){  // This name is you saved under manage jenkins in sonar
+        //  "withSonarQubeEnv" 
+        withSonarQubeEnv('sonar'){  // This name is you saved under manage jenkins in sonar "sonar"
             sh """
             mvn sonar:sonar \
                 -Dsonar.projectKey=i27-eureka \
@@ -35,8 +36,8 @@ pipeline{
             """
           
         }
-        timeout (time: 2, unit: 'MINUTES'){
-            waitForQualityGate abortPipeline: true
+        timeout (time: 2, unit: 'MINUTES'){ // it will wait for 2 minutes
+            waitForQualityGate abortPipeline: true //This line helps if build success go to next step if build fails then stop the build
         }
       }
     }
