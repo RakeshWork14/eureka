@@ -38,6 +38,12 @@ pipeline{
         }
       }
     }
+
+    stage('Docker'){
+      steps{
+        echo "Building Docker"
+      }
+    } 
   }
 
 }
