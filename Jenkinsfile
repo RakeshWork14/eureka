@@ -68,6 +68,10 @@ pipeline{
            echo "*** Building the docker ***"
            pwd
            ls -la
+           # copying the jar to the ".cicd" 
+           # Workspace means pickup the curent working
+           cp ${WORKSPACE}/target/i27-${env.Application_Name}-${env.POM_VERSION}.${env.POM_PACKAGING} ./.cicd
+           ls -la ./.cicd
            # syntax: docker build -t imagename:tag dockerfilepath
            docker build --no-cache --build-arg JAR_SOURCE=i27-${env.Application_Name}-${env.POM_VERSION}.${env.POM_PACKAGING} -t ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT} ./.cicd
            # above line like this: docker build -t docker.io/rakesh9182/eureka:gitcommitid
