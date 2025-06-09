@@ -14,6 +14,7 @@ pipeline{
       SONAR_URL = "http://34.29.155.140:9000"
       POM_VERSION = readMavenPom().getVersion() // readMavenPom() reads the pom the xml file, getVersion() get version will display version from reading the pom.xma and stores in "POM_VERSION" 
       POM_PACKAGING = readMavenPom().getPackaging() // it will display 'jar','var' file and stores in "POM_Pacakaging"
+      DOKER_HUB = "docker.io/rakesh9182"  // use this detail to pull or push the docker images, "rakesh9182" is your user name
     }
   stages{
     stage('buildstage'){
@@ -42,7 +43,7 @@ pipeline{
       }
     }
 
-    stage('Docker Build'){
+    stage('Displaying POM name'){
       steps{
         // for this we need to install "pipeline-utility-steps" plugin
         // it will just printnot change the file name
@@ -52,6 +53,27 @@ pipeline{
         echo "Required display name like this: i27-${env.Application_Name}-${BUILD_NUMBER}-${BRANCH_NAME}.${env.POM_PACKAGING}"
       }
     } 
+
+    stage('Docker Build'){
+      steps{
+        // using shell to write the multiple commands
+        // "pwd" display the current working directory to see and setup the dockerfile path if the dockerfile is in different location then it will fail
+        // "ls -la" available files in that directory, to cross check if "Dockerfile" is there are not
+        // "GIT_COMMIT" we use this as a tag becuase tag name keeps on changing, so GIT_COMMIT id also changes so we use this as a tag
+        // "/.cicd" under this folder my dockerfile present
+        // "--build-arg JAR_SOURCE=i27-${env.Application_Name}-${env.POM_VERSION}.${env.POM_PACKAGING}" Passing the "JAR_SOURCE" environmental variables dynamically
+        // becuase we write in dockerfile "JAR_SOURCE" argument is required for the dockerfile
+        // "i27-${env.Application_Name}-${env.POM_VERSION}.${env.POM_PACKAGING}"  this is the jar file if you see in your dockerfile you write the copy command to copy this file to your required location
+        sh """
+           echo "*** Building the docker ***"
+           pwd
+           ls -la
+           # syntax: docker build -t imagename:tag dockerfilepath
+           docker build --no-cache --build-arg JAR_SOURCE=i27-${env.Application_Name}-${env.POM_VERSION}.${env.POM_PACKAGING} -t ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT} ./.cicd
+           # above line like this: docker build -t docker.io/rakesh9182/eureka:gitcommitid
+        """
+      }
+    }
   }
 
 }
