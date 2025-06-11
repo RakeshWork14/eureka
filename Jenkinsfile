@@ -15,6 +15,7 @@ pipeline{
       POM_VERSION = readMavenPom().getVersion() // readMavenPom() reads the pom the xml file, getVersion() get version will display version from reading the pom.xma and stores in "POM_VERSION" 
       POM_PACKAGING = readMavenPom().getPackaging() // it will display 'jar','var' file and stores in "POM_Pacakaging"
       DOKER_HUB = "docker.io/rakesh9182"  // use this detail to pull or push the docker images, "rakesh9182" is your user name
+      DOCKER_CREDS = credentials('docker_creds')
     }
   stages{
     stage('buildstage'){
@@ -75,6 +76,19 @@ pipeline{
            # syntax: docker build -t imagename:tag dockerfilepath
            docker build --no-cache --build-arg JAR_SOURCE=i27-${env.Application_Name}-${env.POM_VERSION}.${env.POM_PACKAGING} -t ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT} ./.cicd
            # above line like this: docker build -t docker.io/rakesh9182/eureka:gitcommitid
+        """
+      }
+    }
+    stage('Docker Push'){
+      steps{
+        echo " ***** Pushing image to Docker Registry *****"
+        // "DOCKER_CREDS_USR" takes the user name, "DOCKER_CREDS_PSW" takes the password
+        // It will push to "docker.io/rakesh9182/eureka:122bcs"
+        sh """
+           
+           docker login -u ${DOCKER_CREDS_USR} -p ${DOCKER_CREDS_PSW}
+           docker push ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}
+           
         """
       }
     }
