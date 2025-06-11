@@ -57,7 +57,7 @@ pipeline{
 
     stage('Docker Build'){
       steps{
-        // using shell to write the multiple commands
+        // using shell to write the multiple command
         // "pwd" display the current working directory to see and setup the dockerfile path if the dockerfile is in different location then it will fail
         // "ls -la" available files in that directory, to cross check if "Dockerfile" is there are not
         // "GIT_COMMIT" we use this as a tag becuase tag name keeps on changing, so GIT_COMMIT id also changes so we use this as a tag
