@@ -92,6 +92,98 @@ pipeline{
         """
       }
     }
+
+    stage('Deploy to DEV'){
+      steps{
+        echo "Deploying to DEV server"
+        // below command will take credentials from jenkins
+        withCredentials([usernamePassword(credentialsId: 'docker_server_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
+          script{
+              // below command pull the image
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
+               // if you are trying to create a conatainer, if conatiner same it throws error
+               // so, we are using try catch error
+               // try helps if same container name consists it stop the container first, thens removes the container
+              try {
+                // stop the container
+                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker stop ${env.Application_Name}-dev"
+                //remove the container
+                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker rm ${env.Application_Name}-dev"
+              }
+              // if you get any error, printing the error
+              catch(err) {
+                echo "error caught: $err"
+              }
+              // create the container
+              // after deleting container from above creating the new container using below command
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull -dit --name ${env.Application_Name}-dev -p 5761:8761 ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
+          }
+        }
+      }
+    }
+    stage('Deploy to test'){
+      steps{
+        echo "Deploying to Test server"
+        withCredentials([usernamePassword(credentialsId: 'docker_server_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
+          script{
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
+              try {
+                // stop the container
+                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker stop ${env.Application_Name}-test"
+                //remove the container
+                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker rm ${env.Application_Name}-test"
+              }
+              catch(err) {
+                echo "error caught: $err"
+              }
+              // create the container
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull -dit --name ${env.Application_Name}-test -p 5761:8761 ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
+          }
+        }
+      }
+    }
+    stage('Deploy to Stage'){
+      steps{
+        echo "Deploying to Stage server"
+        withCredentials([usernamePassword(credentialsId: 'docker_server_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
+          script{
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
+              try {
+                // stop the container
+                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker stop ${env.Application_Name}-stage"
+                //remove the container
+                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker rm ${env.Application_Name}-stage"
+              }
+              catch(err) {
+                echo "error caught: $err"
+              }
+              // create the container
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull -dit --name ${env.Application_Name}-stage -p 5761:8761 ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
+          }
+        }
+      }
+    }
+    stage('Deploy to Prod'){
+      steps{
+        echo "Deploying to DEV server"
+        withCredentials([usernamePassword(credentialsId: 'docker_server_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
+          script{
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
+              try {
+                // stop the container
+                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker stop ${env.Application_Name}-prod"
+                //remove the container
+                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker rm ${env.Application_Name}-prod"
+              }
+              catch(err) {
+                echo "error caught: $err"
+              }
+              // create the container
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull -dit --name ${env.Application_Name}-prod -p 5761:8761 ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
+          }
+        }
+      }
+    }
   }
 
 }
