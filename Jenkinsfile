@@ -219,7 +219,7 @@ def dockerBuildAndPush(){
 def dockerDeploy(envDeploy, hostPort, contPort){
   return{
     echo "Deploying to $envDeploy Environment"
-       withCredentials([usernamePassword(credentialsId: 'docker_server_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
+       withCredentials([usernamePassword(credentialsId: 'docker_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
           script{
               // below command pull the image
               sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
