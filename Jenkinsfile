@@ -226,6 +226,7 @@ def dockerDeploy(envDeploy, hostPort, contPort){
               // "dev_ip" you need pass this dockervm ip on the jenkins->system->enviroment variables-> username(dev_ip)->value(dockerpublicip)
               sh "hostname -i"
               sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@$dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
+              sh "hostname -i"
                // if you are trying to create a conatainer, if conatiner same it throws error
                // so, we are using try catch error
                // try helps if same container name consists it stop the container first, thens removes the container
