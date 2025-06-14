@@ -5,31 +5,31 @@ pipeline{
     // Parameter will help to deploy to particular stage based on the parameters yes/no, yes will build the stage, no will skip the stage
     parameters{
       choice( name: 'scan',
-          choices: 'no/nyes',
+          choices: ['no', 'yes'],
           description: 'This will scan your application'
       )
       choice( name: 'buildOnly',
-          choices: 'no/nyes',
+          choices: ['no', 'yes'],
           description: 'This will build your application'
       )
       choice( name: 'dockerPush',
-          choices: 'no/nyes',
+          choices: ['no', 'yes'],
           description: 'This will build docker image and push'
       )
       choice( name: 'deployToDev',
-          choices: 'no/nyes',
+          choices: ['no', 'yes'],
           description: 'This will deploy to DEV'
       )
       choice( name: 'deployToTest',
-          choices: 'no/nyes',
+          choices: ['no', 'yes'],
           description: 'This will deploy to Test'
       )
       choice( name: 'deployToStage',
-          choices: 'no/nyes',
+          choices: ['no', 'yes'],
           description: 'This will deploy to Stage'
       )
       choice( name: 'deployToProd',
-          choices: 'no/nyes',
+          choices: ['no', 'yes'],
           description: 'This will deploy to prod'
       )
       
