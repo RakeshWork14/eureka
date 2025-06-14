@@ -140,7 +140,7 @@ pipeline{
       steps{
         // calling the below method
         script{
-          dockerDeploy(dev, 5761, 8761).call()
+          dockerDeploy("dev", 5761, 8761).call()
         }
       }
     }
@@ -152,7 +152,7 @@ pipeline{
       }
       steps{
         script{
-          dockerDeploy(test, 6761, 8761).call()
+          dockerDeploy("test", 6761, 8761).call()
         }      
       }
     }
@@ -164,7 +164,7 @@ pipeline{
       }
       steps{
         script{
-          dockerDeploy(stage, 7761, 8761).call()
+          dockerDeploy("stage", 7761, 8761).call()
         }
       }
     }
@@ -176,7 +176,7 @@ pipeline{
       }
       steps{
         script{
-          dockerDeploy(Prod, 8761, 8761)
+          dockerDeploy("Prod", 8761, 8761)
         }
       }
     }
