@@ -224,15 +224,15 @@ def dockerDeploy(envDeploy, hostPort, contPort){
           script{
               // below command pull the image
               // "dev_ip" you need pass this dockervm ip on the jenkins->system->enviroment variables-> username(dev_ip)->value(dockerpublicip)
-              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@$dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
                // if you are trying to create a conatainer, if conatiner same it throws error
                // so, we are using try catch error
                // try helps if same container name consists it stop the container first, thens removes the container
               try {
                 // stop the container
-              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker stop ${env.Application_Name}-$envDeploy"
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@$dev_ip docker stop ${env.Application_Name}-$envDeploy"
                 //remove the container
-              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker rm ${env.Application_Name}-$envDeploy"
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@$dev_ip docker rm ${env.Application_Name}-$envDeploy"
               }
               // if you get any error, printing the error
               catch(err) {
@@ -240,7 +240,7 @@ def dockerDeploy(envDeploy, hostPort, contPort){
               }
               // create the container
               // after deleting container from above creating the new container using below command
-              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull -dit --name ${env.Application_Name}-$envDeploy -p 5761:8761 ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@$dev_ip docker pull -dit --name ${env.Application_Name}-$envDeploy -p 5761:8761 ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
           }
         } 
   }
