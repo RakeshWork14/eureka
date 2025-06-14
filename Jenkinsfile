@@ -112,7 +112,7 @@ pipeline{
       when {
         anyOf {
           expression {
-            params.dockerBuildAndPush == 'yes'
+            params.dockerPush == 'yes'
           }
         }
       }
