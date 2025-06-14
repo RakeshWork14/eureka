@@ -2,6 +2,38 @@ pipeline{
     agent{
         label 'slave-1'
     }
+    // Parameter will help to deploy to particular stage based on the parameters yes/no, yes will build the stage, no will skip the stage
+    parameters{
+      choice( name: 'scan',
+          choices: 'no/nyes',
+          description: 'This will scan your application'
+      )
+      choice( name: 'buildOnly',
+          choices: 'no/nyes',
+          description: 'This will build your application'
+      )
+      choice( name: 'dockerPush',
+          choices: 'no/nyes',
+          description: 'This will build docker image and push'
+      )
+      choice( name: 'deployToDev',
+          choices: 'no/nyes',
+          description: 'This will deploy to DEV'
+      )
+      choice( name: 'deployToTest',
+          choices: 'no/nyes',
+          description: 'This will deploy to Test'
+      )
+      choice( name: 'deployToStage',
+          choices: 'no/nyes',
+          description: 'This will deploy to Stage'
+      )
+      choice( name: 'deployToProd',
+          choices: 'no/nyes',
+          description: 'This will deploy to prod'
+      )
+      
+    }
 
     tools{
       jdk  'JDK-17'
@@ -19,13 +51,33 @@ pipeline{
     }
   stages{
     stage('buildstage'){
+      // this below "When" condition depends on above Parameters wheter this stage should be build or not
+      when{
+          anyOf {
+            expression {
+              params.buildOnly == 'yes'
+              params.dockerPush == 'yes'
+            }
+          }
+      }
         steps{
-            echo "building the ${env.Application_Name} Application"
-            sh 'mvn clean package -DskipTests=true'
+            script{
+              buildApp().call()
+            }
         }
     }
 
     stage('sonarstage'){
+       // this below "When" condition depends on above Parameters wheter this stage should be build or not
+      when {
+        anyOf {
+          expression {
+            params.scan == 'yes'
+            params.buildOnly == 'yes'
+            params.dockerPush == 'yes'
+          }
+        }
+      }
       steps{
         echo "starting sonar scan"
         //  "withSonarQubeEnv" 
@@ -55,7 +107,15 @@ pipeline{
       }
     } 
 
-    stage('Docker Build'){
+    stage('Docker Build and push'){
+       // this below "When" condition depends on above Parameters wheter this stage should be build or not
+      when {
+        anyOf {
+          expression {
+            params.dockerBuildAndPush == 'yes'
+          }
+        }
+      }
       steps{
         // using shell to write the multiple command
         // "pwd" display the current working directory to see and setup the dockerfile path if the dockerfile is in different location then it will fail
@@ -65,122 +125,58 @@ pipeline{
         // "--build-arg JAR_SOURCE=i27-${env.Application_Name}-${env.POM_VERSION}.${env.POM_PACKAGING}" Passing the "JAR_SOURCE" environmental variables dynamically
         // becuase we write in dockerfile "JAR_SOURCE" argument is required for the dockerfile
         // "i27-${env.Application_Name}-${env.POM_VERSION}.${env.POM_PACKAGING}"  this is the jar file if you see in your dockerfile you write the copy command to copy this file to your required location
-        sh """
-           echo "*** Building the docker ***"
-           pwd
-           ls -la
-           # copying the jar to the ".cicd" 
-           # Workspace means pickup the curent working
-           cp ${WORKSPACE}/target/i27-${env.Application_Name}-${env.POM_VERSION}.${env.POM_PACKAGING} ./.cicd
-           ls -la ./.cicd
-           # syntax: docker build -t imagename:tag dockerfilepath
-           docker build --no-cache --build-arg JAR_SOURCE=i27-${env.Application_Name}-${env.POM_VERSION}.${env.POM_PACKAGING} -t ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT} ./.cicd
-           # above line like this: docker build -t docker.io/rakesh9182/eureka:gitcommitid
-        """
-      }
-    }
-    stage('Docker Push'){
-      steps{
-        echo " ***** Pushing image to Docker Registry *****"
-        // "DOCKER_CREDS_USR" takes the user name, "DOCKER_CREDS_PSW" takes the password
-        // It will push to "docker.io/rakesh9182/eureka:122bcs"
-        sh """
-           
-           docker login -u ${DOCKER_CREDS_USR} -p ${DOCKER_CREDS_PSW}
-           docker push ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}
-           
-        """
+        script{
+          dockerBuildAndPush().call()
+        }
       }
     }
 
     stage('Deploy to DEV'){
+      when{
+        expression{
+          params.deployToDev == 'yes'
+        }
+      }
       steps{
-        echo "Deploying to DEV server"
-        // below command will take credentials from jenkins
-        withCredentials([usernamePassword(credentialsId: 'docker_server_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
-          script{
-              // below command pull the image
-              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
-               // if you are trying to create a conatainer, if conatiner same it throws error
-               // so, we are using try catch error
-               // try helps if same container name consists it stop the container first, thens removes the container
-              try {
-                // stop the container
-                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker stop ${env.Application_Name}-dev"
-                //remove the container
-                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker rm ${env.Application_Name}-dev"
-              }
-              // if you get any error, printing the error
-              catch(err) {
-                echo "error caught: $err"
-              }
-              // create the container
-              // after deleting container from above creating the new container using below command
-              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull -dit --name ${env.Application_Name}-dev -p 5761:8761 ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
-          }
+        // calling the below method
+        script{
+          dockerDeploy(dev, 5761, 8761).call()
         }
       }
     }
     stage('Deploy to test'){
-      steps{
-        echo "Deploying to Test server"
-        withCredentials([usernamePassword(credentialsId: 'docker_server_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
-          script{
-              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
-              try {
-                // stop the container
-                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker stop ${env.Application_Name}-test"
-                //remove the container
-                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker rm ${env.Application_Name}-test"
-              }
-              catch(err) {
-                echo "error caught: $err"
-              }
-              // create the container
-              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull -dit --name ${env.Application_Name}-test -p 5761:8761 ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
-          }
+      when{
+        expression {
+          params.deployToTest == 'yes'
         }
+      }
+      steps{
+        script{
+          dockerDeploy(test, 6761, 8761).call()
+        }      
       }
     }
     stage('Deploy to Stage'){
+      when{
+        expression {
+          params.deployToStage == 'yes'
+        }
+      }
       steps{
-        echo "Deploying to Stage server"
-        withCredentials([usernamePassword(credentialsId: 'docker_server_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
-          script{
-              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
-              try {
-                // stop the container
-                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker stop ${env.Application_Name}-stage"
-                //remove the container
-                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker rm ${env.Application_Name}-stage"
-              }
-              catch(err) {
-                echo "error caught: $err"
-              }
-              // create the container
-              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull -dit --name ${env.Application_Name}-stage -p 5761:8761 ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
-          }
+        script{
+          dockerDeploy(stage, 7761, 8761).call()
         }
       }
     }
     stage('Deploy to Prod'){
+      when{
+        expression {
+          params.deployToProd == 'yes'
+        }
+      }
       steps{
-        echo "Deploying to DEV server"
-        withCredentials([usernamePassword(credentialsId: 'docker_server_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
-          script{
-              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
-              try {
-                // stop the container
-                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker stop ${env.Application_Name}-prod"
-                //remove the container
-                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker rm ${env.Application_Name}-prod"
-              }
-              catch(err) {
-                echo "error caught: $err"
-              }
-              // create the container
-              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull -dit --name ${env.Application_Name}-prod -p 5761:8761 ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
-          }
+        script{
+          dockerDeploy(Prod, 8761, 8761)
         }
       }
     }
@@ -190,4 +186,60 @@ pipeline{
 
 
 
-// added new lines
+
+// Build app Method
+def buildApp(){
+  return{
+     echo "building the ${env.Application_Name} Application"
+     sh 'mvn clean package -DskipTests=true'
+  }
+}
+
+// Method for Docker build and push
+def dockerBuildAndPush(){
+  return {
+      echo "*** Building the docker ***"
+           sh "pwd"
+           sh "ls -la"
+           # copying the jar to the ".cicd" 
+           # Workspace means pickup the curent working
+           sh "cp ${WORKSPACE}/target/i27-${env.Application_Name}-${env.POM_VERSION}.${env.POM_PACKAGING} ./.cicd"
+           sh "ls -la ./.cicd"
+           # syntax: docker build -t imagename:tag dockerfilepath
+           sh "docker build --no-cache --build-arg JAR_SOURCE=i27-${env.Application_Name}-${env.POM_VERSION}.${env.POM_PACKAGING} -t ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT} ./.cicd"
+           # above line like this: docker build -t docker.io/rakesh9182/eureka:gitcommitid
+           echo " ***** Pushing image to Docker Registry *****"
+           sh "docker login -u ${DOCKER_CREDS_USR} -p ${DOCKER_CREDS_PSW}"
+           sh "docker push ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
+
+  }
+}
+
+// Docker deploy method for deploying containers in different environment
+def dockerDeploy(envDeploy, hostPort, contPort){
+  return{
+    echo "Deploying to $envDeploy Environment"
+       withCredentials([usernamePassword(credentialsId: 'docker_server_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
+          script{
+              // below command pull the image
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
+               // if you are trying to create a conatainer, if conatiner same it throws error
+               // so, we are using try catch error
+               // try helps if same container name consists it stop the container first, thens removes the container
+              try {
+                // stop the container
+                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker stop ${env.Application_Name}-$envDeploy"
+                //remove the container
+                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker rm ${env.Application_Name}-$envDeploy"
+              }
+              // if you get any error, printing the error
+              catch(err) {
+                echo "error caught: $err"
+              }
+              // create the container
+              // after deleting container from above creating the new container using below command
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull -dit --name ${env.Application_Name}-$envDeploy -p 5761:8761 ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
+          }
+        } 
+  }
+}
