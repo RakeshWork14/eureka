@@ -219,18 +219,20 @@ def dockerBuildAndPush(){
 def dockerDeploy(envDeploy, hostPort, contPort){
   return{
     echo "Deploying to $envDeploy Environment"
-       withCredentials([usernamePassword(credentialsId: 'docker_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
+    // "reddy_docker_creds" this the docker user credentials pasted in the credentials in jenkins
+       withCredentials([usernamePassword(credentialsId: 'reddy_docker_creds', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]){
           script{
               // below command pull the image
+              // "dev_ip" you need pass this dockervm ip on the jenkins->system->enviroment variables-> username(dev_ip)->value(dockerpublicip)
               sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
                // if you are trying to create a conatainer, if conatiner same it throws error
                // so, we are using try catch error
                // try helps if same container name consists it stop the container first, thens removes the container
               try {
                 // stop the container
-                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker stop ${env.Application_Name}-$envDeploy"
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker stop ${env.Application_Name}-$envDeploy"
                 //remove the container
-                "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker rm ${env.Application_Name}-$envDeploy"
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@dev_ip docker rm ${env.Application_Name}-$envDeploy"
               }
               // if you get any error, printing the error
               catch(err) {
