@@ -1,6 +1,6 @@
 pipeline{
     agent{
-        label 'slave-1'
+        label 'slave1'
     }
     // Parameter will help to deploy to particular stage based on the parameters yes/no, yes will build the stage, no will skip the stage
     parameters{
