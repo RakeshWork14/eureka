@@ -201,13 +201,13 @@ def dockerBuildAndPush(){
       echo "*** Building the docker ***"
            sh "pwd"
            sh "ls -la"
-           # copying the jar to the ".cicd" 
-           # Workspace means pickup the curent working
+           // copying the jar to the ".cicd" 
+          // Workspace means pickup the curent working
            sh "cp ${WORKSPACE}/target/i27-${env.Application_Name}-${env.POM_VERSION}.${env.POM_PACKAGING} ./.cicd"
            sh "ls -la ./.cicd"
-           # syntax: docker build -t imagename:tag dockerfilepath
+          // syntax: docker build -t imagename:tag dockerfilepath
            sh "docker build --no-cache --build-arg JAR_SOURCE=i27-${env.Application_Name}-${env.POM_VERSION}.${env.POM_PACKAGING} -t ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT} ./.cicd"
-           # above line like this: docker build -t docker.io/rakesh9182/eureka:gitcommitid
+           // above line like this: docker build -t docker.io/rakesh9182/eureka:gitcommitid
            echo " ***** Pushing image to Docker Registry *****"
            sh "docker login -u ${DOCKER_CREDS_USR} -p ${DOCKER_CREDS_PSW}"
            sh "docker push ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
