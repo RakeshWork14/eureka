@@ -242,7 +242,7 @@ def dockerDeploy(envDeploy, hostPort, contPort){
               }
               // create the container
               // after deleting container from above creating the new container using below command
-              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@$dev_ip docker pull -dit --name ${env.Application_Name}-$envDeploy -p 5761:8761 ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@$dev_ip docker pull --name ${env.Application_Name}-$envDeploy -p 5761:8761 ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
           }
         } 
   }
