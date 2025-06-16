@@ -207,6 +207,11 @@ pipeline{
             }
         }
       steps{
+        // below timeout will tell that time will set to 5 mins
+        // "input message" tells that prod deployment will be do only by rakesh, no other person will able to do, prod deployment need "rakesh" approval, for approval it will wait for only 5 mins as you mentioned in above time out
+        timeout(time: 300, unit: 'SECONDS'){
+             input message: "Deploying to ${Application_Name} to Production??", ok: 'yes', submitter: 'rakesh'
+        }
         script{
           dockerDeploy("prod", 8761, 8761).call()
         }
