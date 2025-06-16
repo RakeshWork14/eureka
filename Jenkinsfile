@@ -189,27 +189,19 @@ pipeline{
         }
       }
     }
-    stage('Deploy to Prod'){
-      when{
-        expression {
-          params.deployToProd == 'yes'
-        }
-      }
+    
 
+    stage('Deploy to Prod') {
       // Below condition helps to deploy only tag to Production
-      // when{
-      //   allOf {
-      //       anyOf {
-      //         expression{
-      //              params.deployToProd == 'yes'
-      //         }
-      //       }
-      //       anyOf {
-      //           // TAG pattern shold be like "v1.2.3", that matches the below pattern
-      //           tag pattern: "v\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}", comparator: "REGEXP"
-      //       }
-      //   }
-      // }
+      when {
+        allOf {
+           expression{
+              params.deployToProd == 'yes'
+            }
+                // TAG pattern shold be like "v1.2.3", that matches the below pattern
+                tag pattern: "v\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}", comparator: "REGEXP"
+            }
+        }
       steps{
         script{
           dockerDeploy("prod", 8761, 8761)
