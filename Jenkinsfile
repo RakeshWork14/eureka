@@ -195,16 +195,20 @@ pipeline{
       // Below condition helps to deploy only tag to Production
       when {
         allOf {
+          anyOf {
            expression{
               params.deployToProd == 'yes'
             }
+          }
+          anyOf{  
                 // TAG pattern shold be like "v1.2.3", that matches the below pattern
                 tag pattern: "v\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}", comparator: "REGEXP"
+            }    
             }
         }
       steps{
         script{
-          dockerDeploy("prod", 8761, 8761)
+          dockerDeploy("prod", 8761, 8761).call()
         }
       }
     }
