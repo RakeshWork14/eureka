@@ -47,7 +47,7 @@ pipeline{
       POM_VERSION = readMavenPom().getVersion() // readMavenPom() reads the pom the xml file, getVersion() get version will display version from reading the pom.xma and stores in "POM_VERSION" 
       POM_PACKAGING = readMavenPom().getPackaging() // it will display 'jar','var' file and stores in "POM_Pacakaging"
       DOCKER_HUB = "rakesh9182"  // use this detail to pull or push the docker images, "rakesh9182" is your user name
-      DOCKER_CREDS = credentials('docker_creds')
+      DOCKER_CREDS = credentials('docker_creds') // creds stored in the jenkins credentials
     }
   stages{
     stage('buildstage'){
