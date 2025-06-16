@@ -172,7 +172,9 @@ pipeline{
       when{
         allOf {
             anyOf {
-                params.deployToStage == 'yes'
+              expression{
+                   params.deployToStage == 'yes'
+              }
             }
             anyOf {
                 branch 'release/*'
