@@ -159,7 +159,7 @@ pipeline{
         }      
       }
     }
-    // stage('Deploy to Stage'){
+    stage('Deploy to Stage'){
     //   when{
     //     expression {
     //       params.deployToStage == 'yes'
@@ -201,7 +201,7 @@ pipeline{
     }
   }
 
-
+}
 
 
 
