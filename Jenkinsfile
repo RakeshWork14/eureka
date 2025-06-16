@@ -197,8 +197,8 @@ pipeline{
       // }
 
       // Below condition helps to deploy only tag to Production
-      when{
-        allOf{
+      when {
+        allOf {
           anyOf{
             expression {
               params.deployToProd == 'yes'
@@ -212,7 +212,7 @@ pipeline{
       }
       steps{
         script{
-          dockerDeploy("Prod", 8761, 8761)
+          dockerDeploy("prod", 8761, 8761)
         }
       }
     }
