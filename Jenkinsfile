@@ -140,6 +140,8 @@ pipeline{
       steps{
         // calling the below method
         script{
+          // if image is not there below method build and push the image
+          imageValidation().call()
           dockerDeploy("dev", 5761, 8761).call()
         }
       }
@@ -152,6 +154,7 @@ pipeline{
       }
       steps{
         script{
+          imageValidation().call()
           dockerDeploy("test", 6761, 8761).call()
         }      
       }
@@ -164,6 +167,7 @@ pipeline{
       }
       steps{
         script{
+          imageValidation().call()
           dockerDeploy("stage", 7761, 8761).call()
         }
       }
@@ -215,6 +219,25 @@ def dockerBuildAndPush(){
   }
 }
 
+// image validation method
+// This method helps that if you are trying to deploy to dev directly, but we are using commitid, so the image in git and docker hub image is different, so the build will fail
+// In that case, you need write the below method, if image is not there build image again, if image avaialble exit this image validation
+
+def imageValidation(){
+  return{
+    println("Atempting to pull the Docker Image")
+    try{
+      sh "docker pull ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}"
+      println("Image is pulled successfully")
+    }
+    catch (Exception e){
+       println ("oops the docker image with the tag is not available, so creating the new build and push")
+       buildApp().call()
+       dockerBuildAndPush().call()
+    }
+  }
+}
+
 // Docker deploy method for deploying containers in different environment
 def dockerDeploy(envDeploy, hostPort, contPort){
   return{
@@ -225,7 +248,7 @@ def dockerDeploy(envDeploy, hostPort, contPort){
               // below command pull the image
               // "dev_ip" you need pass this dockervm ip on the jenkins->system->enviroment variables-> username(dev_ip)->value(dockerpublicip)
               sh "hostname -i"
-              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@$dev_ip docker pull \"${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
+              sh "sshpass -p '$PASSWORD' -v ssh -o StrictHostKeyChecking=no $USERNAME@$dev_ip \"docker pull ${env.DOCKER_HUB}/${env.Application_Name}:${GIT_COMMIT}\" "
               sh "hostname -i"
                // if you are trying to create a conatainer, if conatiner same it throws error
                // so, we are using try catch error
