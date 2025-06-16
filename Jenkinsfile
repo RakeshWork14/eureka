@@ -159,12 +159,27 @@ pipeline{
         }      
       }
     }
-    stage('Deploy to Stage'){
+    // stage('Deploy to Stage'){
+    //   when{
+    //     expression {
+    //       params.deployToStage == 'yes'
+    //     }
+    //   }
+
+      // below when condition, will deploy only "release" branches to the stage
+       // both the below condition true then it will deploy to stage
+
       when{
-        expression {
-          params.deployToStage == 'yes'
+        allOf {
+            anyOf {
+                params.deployToStage == 'yes'
+            }
+            anyOf {
+                branch 'release/*'
+            }
         }
       }
+
       steps{
         script{
           imageValidation().call()
