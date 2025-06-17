@@ -5,4 +5,9 @@
 @Library("i27academy-slb@main") _
     dockerPipeline(
         appName: 'eureka'
+        devPort: '5761'
+        testPort: '6761'
+        stagePort: '7761'
+        prodPort: '8761'
+        contPort: '8761'
     )
