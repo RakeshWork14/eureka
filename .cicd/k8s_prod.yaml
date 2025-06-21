@@ -3,17 +3,18 @@ kind: Deployment
 metadata:
   name: i27-eureka-prod
 spec:
-  repliacas: 1
+  replicas: 1
   selector:
     matchLabels:
       name: i27-eureka-prod
-  template:
+  template: 
     metadata:
-      labels: i27-eureka-prod
-  spec:
-    containers:
-    - name: i27-eureka-prod
-      image: DIT
+      labels:
+        name: i27-eureka-prod
+    spec: 
+      containers:
+      - name: i27-eureka-prod
+        image: DIT  # Docker image tag will replaces by shared libraries
 
 ---
 apiVersion: v1 
