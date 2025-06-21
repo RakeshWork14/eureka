@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: i27-eureka-prod
+spec:
+  repliacas: 1
+  selector:
+    matchLabels:
+      name: i27-eureka-prod
+  template:
+    metadata:
+      labels: i27-eureka-prod
+  spec:
+    containers:
+    - name: i27-eureka-prod
+      image: DIT
+
+---
+apiVersion: v1 
+kind: Service
+metadata:
+  name: i27-eureka-prod-svc
+spec:
+  selector:
+    app: i27-eureka-prod #this name matches with the above matadata->labelname, otherwise it won't create the endpoint
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8761
+  type: NodePort            

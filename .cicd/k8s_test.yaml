@@ -1,0 +1,35 @@
+# Creating a deployment file to deploy on test environment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: i27-eureka-tst
+spec:
+  repliacas: 1
+  selector:
+    matchLabels:
+      app: i27-eureka-tst
+    template: 
+      metadata:
+        labels:
+          app: i27-eureka-tst
+      spec: 
+        containers:
+        - name: i27-eureka-tst
+          image: DIT  # Docker image tag will replaces by shared libraries
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: i27-eureka-tst-svc
+spec:
+  selector: 
+    app: i27-eureka-tst #this name matches with the above matadata->labelname, otherwise it won't create the endpoint
+  ports:
+    - protocol: TCP
+      port: 80      # This is service port, any port you need
+      targetPort: 8761  # Same as your application port
+  type: NodePort    
+    
+
+      

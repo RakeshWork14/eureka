@@ -1,3 +1,4 @@
+# Creating a deployment file for dev environment
 apiVersion: apps/v1
 kind: Deployment 
 metadata: 
@@ -14,8 +15,7 @@ spec:
     spec:
       containers:
         - name: i27-eureka-dev
-        # what image should i place here ????/
-          image: DIT
+          image: DIT   # "DIT" your own name, which will later replacez with shared libraries
           resources:
             requests: 
               memory: "128Mi"
@@ -28,13 +28,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata: 
-  name: i27-eureka-dev
+  name: i27-eureka-dev-svc
 spec:  
   selector: 
-    name: i27-eureka-dev
+    name: i27-eureka-dev #this name matches with the above matadata->labelname, otherwise it won't create the endpoint
   ports:
   - protocol: TCP
-    port: 80
-    targetPort: 8761
+    port: 80    # This is service port, any port you need
+    targetPort: 8761  # Same as your application port
   type: NodePort
     
