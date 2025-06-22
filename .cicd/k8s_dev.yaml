@@ -9,12 +9,12 @@ spec:
     matchLabels:
       app: i27-eureka-dev
   template:
-    imagePullSecrets: 
-      - name: docker-secret  #same name you created "docker-registry secret" under dev namespace
     metadata:
       labels:
         app: i27-eureka-dev
     spec:
+      imagePullSecrets: 
+      - name: docker-secret  #same name you created "docker-registry secret" under dev namespace
       containers:
         - name: i27-eureka-dev
           image: DIT   # "DIT" your own name, which will later replacez with shared libraries

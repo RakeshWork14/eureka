@@ -9,12 +9,12 @@ spec:
     matchLabels:
       name: i27-eureka-tst
   template: 
-    imagePullSecrets: 
-      - name: docker-secret  #same name you created "docker-registry secret" under test namespace
     metadata:
       labels:
         name: i27-eureka-tst
     spec: 
+      imagePullSecrets: 
+      - name: docker-secret  #same name you created "docker-registry secret" under test namespace
       containers:
       - name: i27-eureka-tst
         image: DIT  # Docker image tag will replaces by shared libraries

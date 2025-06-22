@@ -8,12 +8,12 @@ spec:
     matchLabels:
       name: i27-eureka-prod
   template: 
-    imagePullSecrets: 
-      - name: docker-secret  #same name you created "docker-registry secret" under dprodv namespace
     metadata:
       labels:
         name: i27-eureka-prod
     spec: 
+      imagePullSecrets: 
+      - name: docker-secret  #same name you created "docker-registry secret" under prod namespace
       containers:
       - name: i27-eureka-prod
         image: DIT  # Docker image tag will replaces by shared libraries

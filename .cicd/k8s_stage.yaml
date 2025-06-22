@@ -8,12 +8,12 @@ spec:
     matchLabels:
       name: i27-eureka-stage
   template: 
-    imagePullSecrets: 
-      - name: docker-secret  #same name you created "docker-registry secret" under stage namespace
     metadata:
       labels:
         name: i27-eureka-stage
     spec: 
+      imagePullSecrets: 
+      - name: docker-secret  #same name you created "docker-registry secret" under stage namespace
       containers:
       - name: i27-eureka-stage
         image: DIT  # Docker image tag will replaces by shared libraries
