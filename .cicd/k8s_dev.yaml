@@ -7,11 +7,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      name: i27-eureka-dev
+      app: i27-eureka-dev
   template:
     metadata:
       labels:
-        name: i27-eureka-dev
+        app: i27-eureka-dev
     spec:
       containers:
         - name: i27-eureka-dev
@@ -24,10 +24,10 @@ metadata:
   name: i27-eureka-dev-svc
 spec:  
   selector: 
-    name: i27-eureka-dev #this name matches with the above matadata->labelname, otherwise it won't create the endpoint
+    app: i27-eureka-dev #this name matches with the above matadata->labelname, otherwise it won't create the endpoint
   ports:
-  - protocol: TCP
-    port: 80    # This is service port, any port you need
-    targetPort: 8761  # Same as your application port
+    - protocol: TCP
+      port: 80    # This is service port, any port you need
+      targetPort: 8761  # Same as your application port
   type: NodePort
     
