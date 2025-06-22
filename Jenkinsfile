@@ -1,7 +1,7 @@
 // Kubernetes pipeline
 
 @Library("i27academy-slb@main") _
-    k8spipeline(
+    helmpipeline(
         appName: 'eureka'
     )
 
