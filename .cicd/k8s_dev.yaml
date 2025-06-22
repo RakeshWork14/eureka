@@ -16,13 +16,6 @@ spec:
       containers:
         - name: i27-eureka-dev
           image: DIT   # "DIT" your own name, which will later replacez with shared libraries
-          resources:
-            requests: 
-              memory: "128Mi"
-              cpu: "250m"
-            limits: 
-              memory: "256Mi"
-              cpu: "500m"
 ---
 # Service 
 apiVersion: v1
