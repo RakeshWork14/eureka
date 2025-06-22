@@ -23,7 +23,7 @@ metadata:
   name: i27-eureka-prod-svc
 spec:
   selector:
-    app: i27-eureka-prod #this name matches with the above matadata->labelname, otherwise it won't create the endpoint
+    name: i27-eureka-prod #this name matches with the above matadata->labelname, otherwise it won't create the endpoint
   ports:
     - protocol: TCP
       port: 80
