@@ -9,6 +9,8 @@ spec:
     matchLabels:
       name: i27-eureka-tst
   template: 
+    imagePullSecrets: 
+      - name: docker-secret  #same name you created "docker-registry secret" under test namespace
     metadata:
       labels:
         name: i27-eureka-tst
@@ -29,7 +31,28 @@ spec:
     - protocol: TCP
       port: 80      # This is service port, any port you need
       targetPort: 8761  # Same as your application port
-  type: NodePort    
+  type: ClusterIP    
+
+---
+# creating a ingress for your domain (domainname= cart.rakesh.tst.com)
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: eureka-tst-ingress
+  namespace: default
+spec:
+  rules:
+    - host: cart.rakesh.tst.com  # ip's changing so we created domain name and using that domain name here and paste this name for application.yaml
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: i27-eureka-tst-svc  # Correct service name
+                port:
+                  number: 80   
     
 
       
